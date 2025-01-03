@@ -1,0 +1,32 @@
+{
+  "name": "user-database-backend",
+  "version": "1.0.0",
+  "description": "A simple backend for a user database with authentication using Node.js, Express, and MongoDB.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [
+    "user-database",
+    "backend",
+    "authentication",
+    "nodejs",
+    "express",
+    "mongodb"
+  ],
+  "author": "HF",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.9.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
