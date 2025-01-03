@@ -4,8 +4,8 @@
   "description": "A simple backend for a user database with authentication using Node.js, Express, and MongoDB.",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "node server.js",
+    "start": "nodemon server.js"
   },
   "keywords": [
     "user-database",
