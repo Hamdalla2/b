@@ -1,4 +1,3 @@
-// routes/users.js
 const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -6,7 +5,24 @@ const User = require('../models/User');
 
 const router = express.Router();
 
-// Register
+
+const authenticateToken = (req, res, next) => {
+    const token = req.headers["authorization"]?.split(" ")[1];
+
+    if (!token) {
+        return res.status(403).json({ message: "Token required" });
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (err) {
+            return res.status(403).json({ message: "Invalid token" });
+        }
+
+        req.user = user;
+        next();
+    });
+};
+
 router.post('/register', async (req, res) => {
     try {
         const hashedPassword = await bcrypt.hash(req.body.password, 10);
@@ -18,7 +34,6 @@ router.post('/register', async (req, res) => {
     }
 });
 
-// Login
 router.post('/login', async (req, res) => {
     try {
         const user = await User.findOne({ email: req.body.email });
@@ -28,20 +43,29 @@ router.post('/login', async (req, res) => {
         if (!validPassword) return res.status(400).json({ type: "password", msg: "Wrong password" });
 
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-        res.status(200).json({ token });
+        res.status(200).json({ token, user });
     } catch (err) {
         res.status(500).json(err);
     }
 });
 
-router.get('/users', async (req, res) => {
+router.get('/users', authenticateToken, async (req, res) => {
     try {
-        const user = await User.find();
-        if (!user) return res.status(404).json("User not found!");
-        res.status(200).json(user);
+        const users = await User.find();
+        if (!user) return res.status(400).json("User not found!");
+        res.status(200).json(users);
     } catch (err) {
         res.status(500).json(err);
     }
+});
+
+router.get('/user', authenticateToken, async (req, res) => {
+    const user = await User.find((u) => u.email === req.user.email);
+    if (!user) {
+        return res.status(400).json({ msg: 'User not found' });
+    }
+
+    res.status(200).json(user);
 });
 
 module.exports = router;
