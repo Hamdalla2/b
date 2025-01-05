@@ -1,13 +1,13 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const User = require('./models/User');
 
 const router = express.Router();
 
 
 const authenticateToken = (req, res, next) => {
-    const token = req.headers["authorization"]?.split(" ")[1];
+    const token = req.headers["token"];
 
     if (!token) {
         return res.status(403).json({ message: "Token required" });
@@ -30,7 +30,7 @@ router.post('/register', async (req, res) => {
         const savedUser = await newUser.save();
         res.status(201).json(savedUser);
     } catch (err) {
-        res.status(500).json(err);
+        res.status(500).json({ msg: 'Server error', error: err.message });
     }
 });
 
@@ -45,7 +45,7 @@ router.post('/login', async (req, res) => {
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
         res.status(200).json({ token, user });
     } catch (err) {
-        res.status(500).json(err);
+        res.status(500).json({ msg: 'Server error', error: err.message });
     }
 });
 
@@ -55,17 +55,22 @@ router.get('/users', authenticateToken, async (req, res) => {
         if (!user) return res.status(400).json("User not found!");
         res.status(200).json(users);
     } catch (err) {
-        res.status(500).json(err);
+        res.status(500).json({ msg: 'Server error', error: err.message });
     }
 });
 
 router.get('/user', authenticateToken, async (req, res) => {
-    const user = await User.find((u) => u.email === req.user.email);
-    if (!user) {
-        return res.status(400).json({ msg: 'User not found' });
-    }
+    try {
+        const user = await User.findOne({ _id: req.user.id });
 
-    res.status(200).json(user);
+        if (!user) {
+            return res.status(400).json({ msg: 'User not found' });
+        }
+
+        res.status(200).json({ user });
+    } catch (err) {
+        res.status(500).json({ msg: 'Server error', error: err.message });
+    }
 });
 
 module.exports = router;
